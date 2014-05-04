@@ -6,11 +6,11 @@ import com.google.code.linkedinapi.client.enumeration.ProfileField;
 import com.google.code.linkedinapi.client.enumeration.ProfileType;
 import com.google.code.linkedinapi.schema.Person;
 
-public class Profile {
+public class ProfileAPI {
 
 	private LinkedInApiClient client;
 
-	public Profile(LinkedInApiClient apiClient) {
+	public ProfileAPI(LinkedInApiClient apiClient) {
 		client = apiClient;
 	}
 
