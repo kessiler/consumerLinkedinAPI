@@ -5,8 +5,6 @@ import java.util.List;
 import com.google.code.linkedinapi.client.GroupsApiClient;
 import com.google.code.linkedinapi.schema.Group;
 import com.google.code.linkedinapi.schema.GroupMembership;
-import com.google.code.linkedinapi.schema.GroupMemberships;
-import com.google.code.linkedinapi.schema.Groups;
 
 public class GroupsAPI {
 	
