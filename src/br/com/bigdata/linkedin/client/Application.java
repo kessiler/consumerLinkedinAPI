@@ -4,14 +4,13 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 import com.google.code.linkedinapi.client.LinkedInApiClient;
-import com.google.code.linkedinapi.client.enumeration.ProfileType;
-import com.google.code.linkedinapi.schema.MemberUrl;
 import com.google.code.linkedinapi.schema.Person;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 
+import br.com.bigdata.linkedin.api.ConnectionsAPI;
 import br.com.bigdata.linkedin.api.ProfileAPI;
 import br.com.bigdata.linkedin.factory.ClientFactory;
 
@@ -31,6 +30,8 @@ public class Application {
 				.createLinkedInApiClient(Application.ACCESS_TOKEN_OPTION,
 						Application.ACCESS_TOKEN_SECRET_OPTION);
 
+		long timeStart = System.currentTimeMillis();
+		System.out.println("Process start..");
 		ProfileAPI profileAPI = new ProfileAPI(accessApi);
 		MongoClient mongoClient = new MongoClient("localhost", 27017);
 		DB mongoDB = mongoClient.getDB("bigData");
@@ -38,22 +39,28 @@ public class Application {
 		BasicDBObject userDocument = new BasicDBObject();
 		int countQuery = 0;
 		Person profile = profileAPI.getProfile();
-		List<MemberUrl> members = profile.getMemberUrlResources().getMemberUrlList();
+		ConnectionsAPI connection = new ConnectionsAPI(accessApi);
+		List<Person> peopleConnection = connection.getConnections().getPersonList();
+		String parentId = profile.getId();
 		while(Application.QUERY_MAX > countQuery++) {
 			userDocument.put("firstName", profile.getFirstName());
 			userDocument.put("lastName", profile.getLastName());
-			userDocument.put("locationName", profile.getLocation().getName());
-			userDocument.put("postCode", profile.getLocation().getPostalCode());
-			userDocument.put("numRecommenders", profile.getNumRecommenders());
+			userDocument.put("headline", profile.getHeadline());
+			userDocument.put("summary", profile.getSummary());
+			userDocument.put("profileUrl", profile.getPublicProfileUrl());
+			userDocument.put("profileId", profile.getId());
+			userDocument.put("parentUser", parentId.equals(profile.getId()) ? "" : parentId) ;
 			usersProfile.save(userDocument);
 			userDocument.clear();
-			if(members.size() > 0 && members.size() > countQuery) {
-				profile = profileAPI.getProfile(members.get(countQuery).getUrl(), ProfileType.STANDARD);
+			if(peopleConnection.size() > 0 && peopleConnection.size() > countQuery) {
+				profile = profileAPI.getProfile(peopleConnection.get(countQuery).getId());
 			} else {
 				countQuery = Application.QUERY_MAX;
 			}
 		}
 		mongoClient.close();
+		long timeEnd = System.currentTimeMillis();
+		System.out.println("Time schedule " + (timeEnd - timeStart) + " ms");
 		
 	}
 }
